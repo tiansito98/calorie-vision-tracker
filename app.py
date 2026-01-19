@@ -993,56 +993,47 @@ def profile_page(db, config):
         
         from src.utils.helpers import calculate_tdee, ACTIVITY_DESCRIPTIONS
         
-with st.form("tdee_form"):
+        with st.form("tdee_form"):
             col1, col2 = st.columns(2)
-
             with col1:
                 weight = st.number_input("Weight (kg)", min_value=30.0, max_value=300.0, value=70.0, step=0.5)
                 height = st.number_input("Height (cm)", min_value=100.0, max_value=250.0, value=170.0, step=0.5)
-
             with col2:
                 age = st.number_input("Age", min_value=15, max_value=100, value=30)
                 gender = st.selectbox("Gender", options=["male", "female"])
-
             activity = st.selectbox(
                 "Activity Level",
                 options=list(ACTIVITY_DESCRIPTIONS.keys()),
                 format_func=lambda x: f"{x.replace('_', ' ').title()} - {ACTIVITY_DESCRIPTIONS[x]}"
             )
-
             if st.form_submit_button("Calculate TDEE", type="primary"):
                 result = calculate_tdee(weight, height, age, gender, activity)
                 st.session_state.tdee_result = result
 
         # Display results OUTSIDE the form
-            if "tdee_result" in st.session_state:
-                result = st.session_state.tdee_result
-                
-                st.success(f"Your estimated TDEE: **{result['tdee']:,} calories/day**")
-
-                st.markdown("**Calorie Targets by Goal:**")
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    st.markdown("**Weight Loss:**")
-                    st.markdown(f"- Aggressive (-750): {result['targets']['aggressive_loss']:,} cal")
-                    st.markdown(f"- Moderate (-500): {result['targets']['moderate_loss']:,} cal")
-                    st.markdown(f"- Mild (-250): {result['targets']['mild_loss']:,} cal")
-
-                with col2:
-                    st.markdown("**Weight Gain:**")
-                    st.markdown(f"- Mild (+250): {result['targets']['mild_gain']:,} cal")
-                    st.markdown(f"- Moderate (+500): {result['targets']['moderate_gain']:,} cal")
-
-                if st.button("Use TDEE as my target"):
-                    db.update_user_profile(user_id, {
-                        "daily_calorie_target": result["tdee"],
-                        "calculation_method": "estimated"
-                    })
-                    st.session_state.user_profile = db.get_user_profile(user_id)
-                    del st.session_state.tdee_result
-                    st.success("Target updated!")
-                    st.rerun()
+        if "tdee_result" in st.session_state:
+            result = st.session_state.tdee_result
+            st.success(f"Your estimated TDEE: **{result['tdee']:,} calories/day**")
+            st.markdown("**Calorie Targets by Goal:**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**Weight Loss:**")
+                st.markdown(f"- Aggressive (-750): {result['targets']['aggressive_loss']:,} cal")
+                st.markdown(f"- Moderate (-500): {result['targets']['moderate_loss']:,} cal")
+                st.markdown(f"- Mild (-250): {result['targets']['mild_loss']:,} cal")
+            with col2:
+                st.markdown("**Weight Gain:**")
+                st.markdown(f"- Mild (+250): {result['targets']['mild_gain']:,} cal")
+                st.markdown(f"- Moderate (+500): {result['targets']['moderate_gain']:,} cal")
+            if st.button("Use TDEE as my target"):
+                db.update_user_profile(user_id, {
+                    "daily_calorie_target": result["tdee"],
+                    "calculation_method": "estimated"
+                })
+                st.session_state.user_profile = db.get_user_profile(user_id)
+                del st.session_state.tdee_result
+                st.success("Target updated!")
+                st.rerun()
     
             with tab3:
                 st.markdown("### Notification Settings")
